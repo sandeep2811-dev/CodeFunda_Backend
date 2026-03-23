@@ -204,6 +204,53 @@ exports.Prisma.ProblemInPlaylistScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ContestScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestProblemScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  problemId: 'problemId',
+  order: 'order',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ContestParticipantScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  userId: 'userId',
+  problemsSolved: 'problemsSolved',
+  totalPenalty: 'totalPenalty',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.ContestSubmissionScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  userId: 'userId',
+  problemId: 'problemId',
+  status: 'status',
+  penalty: 'penalty',
+  submittedAt: 'submittedAt'
+};
+
+exports.Prisma.ContestViolationScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  userId: 'userId',
+  type: 'type',
+  description: 'description',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -246,7 +293,12 @@ exports.Prisma.ModelName = {
   TestCaseResult: 'TestCaseResult',
   ProblemSolved: 'ProblemSolved',
   Playlist: 'Playlist',
-  ProblemInPlaylist: 'ProblemInPlaylist'
+  ProblemInPlaylist: 'ProblemInPlaylist',
+  Contest: 'Contest',
+  ContestProblem: 'ContestProblem',
+  ContestParticipant: 'ContestParticipant',
+  ContestSubmission: 'ContestSubmission',
+  ContestViolation: 'ContestViolation'
 };
 
 /**

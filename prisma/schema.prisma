@@ -35,37 +35,42 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  problems      Problem[]
-  submission    Submission[]
-  problemSolved ProblemSolved[]
-   playlists Playlist[]
+  problems             Problem[]
+  submission           Submission[]
+  problemSolved        ProblemSolved[]
+  playlists            Playlist[]
+  contestsCreated      Contest[]            @relation("ContestCreator")
+  contestParticipants  ContestParticipant[]
+  contestSubmissions   ContestSubmission[]
+  contestViolations    ContestViolation[]
 }
+
 
 model Problem {
   id          String     @id @default(uuid())
   title       String
   description String
   difficulty  Difficulty
-  tags        String[] // ["tag1", "tag2", "tag3"]
+  tags        String[]
   userId      String
   examples    Json
   constraints String
   hints       String?
   editorial   String?
 
-  testcases          Json // 
+  testcases          Json
   codeSnippets       Json
   referenceSolutions Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  //  Relationship
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  submission Submission[]
-  solvedBy   ProblemSolved[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submission        Submission[]
+  solvedBy          ProblemSolved[]
   problemsPlaylists ProblemInPlaylist[]
- 
+  contestProblems   ContestProblem[]
+  contestSubmissions ContestSubmission[]
 }
 // enum Status{
 //   ACCEPTED
@@ -150,6 +155,8 @@ model Playlist{
 }
 
 
+
+
 model ProblemInPlaylist{
   id        String   @id @default(uuid())
   playListId  String
@@ -162,4 +169,91 @@ model ProblemInPlaylist{
 
   @@unique([playListId , problemId])
 
+}
+
+// ── Contest System ────────────────────────────────────────────────────────
+
+model Contest {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  createdBy   String   // userId of admin who created it
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator      User                  @relation("ContestCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  problems     ContestProblem[]
+  participants ContestParticipant[]
+  submissions  ContestSubmission[]
+  violations   ContestViolation[]
+}
+
+model ContestProblem {
+  id        String @id @default(uuid())
+  contestId String
+  problemId String
+  order     Int    @default(0) // display order within contest
+
+  createdAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, problemId])
+}
+
+model ContestParticipant {
+  id             String   @id @default(uuid())
+  contestId      String
+  userId         String
+  problemsSolved Int      @default(0)
+  totalPenalty   Int      @default(0) // penalty in minutes
+  joinedAt       DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+}
+
+model ContestSubmission {
+  id          String   @id @default(uuid())
+  contestId   String
+  userId      String
+  problemId   String
+  status      String   // "Accepted" | "Wrong Answer"
+  penalty     Int      @default(0) // penalty minutes for this attempt
+  submittedAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, userId])
+}
+
+// ── Anti-Cheat Violations ────────────────────────────────────────────────────
+
+// Violation types we track:
+//   TAB_SWITCH       – user switched tab or minimised window
+//   FULLSCREEN_EXIT  – user exited fullscreen mode
+//   COPY_PASTE       – copy / paste / cut attempted in editor
+//   KEYBOARD_SHORTCUT– blocked shortcut detected (Ctrl+T, Ctrl+N, etc.)
+//   WEBCAM_OFF       – webcam was turned off during contest
+
+model ContestViolation {
+  id           String   @id @default(uuid())
+  contestId    String
+  userId       String
+  type         String   // one of the types above
+  description  String?  // optional human-readable detail
+  createdAt    DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, userId])
 }
